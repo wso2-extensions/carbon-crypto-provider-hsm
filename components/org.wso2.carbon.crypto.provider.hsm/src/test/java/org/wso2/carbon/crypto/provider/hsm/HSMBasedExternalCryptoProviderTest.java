@@ -78,8 +78,7 @@ public class HSMBasedExternalCryptoProviderTest {
         sampleData.add(null);
 
         sampleCryptoContexts.add(CryptoContext.buildEmptyContext(-1234, "carbon.super"));
-        sampleCryptoContexts.add((CryptoContext.buildEmptyContext(1, "abc.com")));
-        sampleCryptoContexts.add(null);
+        sampleCryptoContexts.add((CryptoContext.buildEmptyContext(1, "wso2.lk")));
 
         return new Object[][]{
                 {
@@ -98,7 +97,7 @@ public class HSMBasedExternalCryptoProviderTest {
 
                 },
                 {
-                        sampleData.get(3), "MD5withRSA", null, sampleCryptoContexts.get(2),
+                        sampleData.get(3), "MD5withRSA", null, sampleCryptoContexts.get(0),
                         hsmBasedKeyResolver.getPrivateKeyInfo(sampleCryptoContexts.get(0))
                 },
                 {
@@ -114,9 +113,9 @@ public class HSMBasedExternalCryptoProviderTest {
                             CryptoContext cryptoContext, PrivateKeyInfo privateKeyInfo, byte[] expectedDecryptData) {
 
         try {
-            byte[] decrytpedData = hsmBasedExternalCryptoProvider.decrypt(ciphertext, algorithm,
+            byte[] decryptedData = hsmBasedExternalCryptoProvider.decrypt(ciphertext, algorithm,
                     javaSecurityAPIProvider, cryptoContext, privateKeyInfo);
-            Assert.assertEquals(decrytpedData, expectedDecryptData);
+            Assert.assertEquals(decryptedData, expectedDecryptData);
         } catch (CryptoException e) {
             if (!(algorithm != null && MechanismResolver.getSupportedMechanisms().containsKey(algorithm))) {
                 Assert.assertEquals(e.getMessage(),
@@ -138,7 +137,7 @@ public class HSMBasedExternalCryptoProviderTest {
                         hsmBasedKeyResolver.getPrivateKeyInfo(sampleCryptoContexts.get(1)), sampleData.get(1)
                 },
                 {
-                        sampleEncryptedData.get(2), "RSA/ECB/OAEPwithSHA1andMGF1Padding", null, sampleCryptoContexts.get(2),
+                        sampleEncryptedData.get(2), "RSA/ECB/OAEPwithSHA1andMGF1Padding", null, sampleCryptoContexts.get(0),
                         hsmBasedKeyResolver.getPrivateKeyInfo(sampleCryptoContexts.get(0)), sampleData.get(2)
                 },
                 {
@@ -178,7 +177,7 @@ public class HSMBasedExternalCryptoProviderTest {
                         hsmBasedKeyResolver.getCertificateInfo(sampleCryptoContexts.get(1))
                 },
                 {
-                        sampleData.get(2), "RSA/ECB/OAEPwithSHA1andMGF1Padding", null, sampleCryptoContexts.get(2),
+                        sampleData.get(2), "RSA/ECB/OAEPwithSHA1andMGF1Padding", null, sampleCryptoContexts.get(0),
                         hsmBasedKeyResolver.getCertificateInfo(sampleCryptoContexts.get(0))
                 },
                 {
@@ -225,7 +224,7 @@ public class HSMBasedExternalCryptoProviderTest {
 
                 },
                 {
-                        sampleData.get(3), sampleSignatures.get(3), "MD5withRSA", null, sampleCryptoContexts.get(2),
+                        sampleData.get(3), sampleSignatures.get(3), "MD5withRSA", null, sampleCryptoContexts.get(0),
                         hsmBasedKeyResolver.getCertificateInfo(sampleCryptoContexts.get(0)), true
                 },
                 {
@@ -260,7 +259,7 @@ public class HSMBasedExternalCryptoProviderTest {
                         sampleCryptoContexts.get(1), hsmBasedKeyResolver.getCertificateInfo(sampleCryptoContexts.get(1))
                 },
                 {
-                        sampleCryptoContexts.get(2), hsmBasedKeyResolver.getCertificateInfo(sampleCryptoContexts.get(0))
+                        sampleCryptoContexts.get(0), hsmBasedKeyResolver.getCertificateInfo(sampleCryptoContexts.get(0))
                 }
         };
     }
@@ -292,7 +291,7 @@ public class HSMBasedExternalCryptoProviderTest {
                         sampleCryptoContexts.get(1), hsmBasedKeyResolver.getPrivateKeyInfo(sampleCryptoContexts.get(1))
                 },
                 {
-                        sampleCryptoContexts.get(2), hsmBasedKeyResolver.getPrivateKeyInfo(sampleCryptoContexts.get(0))
+                        sampleCryptoContexts.get(0), hsmBasedKeyResolver.getPrivateKeyInfo(sampleCryptoContexts.get(0))
                 },
                 {
                         sampleContext1, hsmBasedKeyResolver.getPrivateKeyInfo(sampleContext1)
@@ -333,7 +332,7 @@ public class HSMBasedExternalCryptoProviderTest {
                 },
                 {
                         sampleHybridEncryptionInputs.get(2), "DES/CBC/PKCS5Padding", "RSA/ECB/OAEPwithMD5andMGF1Padding", null,
-                        sampleCryptoContexts.get(2), hsmBasedKeyResolver.getCertificateInfo(sampleCryptoContexts.get(0))
+                        sampleCryptoContexts.get(0), hsmBasedKeyResolver.getCertificateInfo(sampleCryptoContexts.get(0))
                 },
                 {
                         sampleHybridEncryptionInputs.get(3), "3DES/CBC/PKCS5Padding", "RSA/ECB/OAEPwithSHA512andMGF1Padding", null,
@@ -366,7 +365,7 @@ public class HSMBasedExternalCryptoProviderTest {
                 },
                 {
                         sampleHybridEncryptedData.get(2), "DES/CBC/PKCS5Padding", "RSA/ECB/OAEPwithMD5andMGF1Padding", null,
-                        sampleCryptoContexts.get(2), hsmBasedKeyResolver.getPrivateKeyInfo(sampleCryptoContexts.get(0)), sampleData.get(2)
+                        sampleCryptoContexts.get(0), hsmBasedKeyResolver.getPrivateKeyInfo(sampleCryptoContexts.get(0)), sampleData.get(2)
                 },
                 {
                         sampleHybridEncryptedData.get(3), "3DES/CBC/PKCS5Padding", "RSA/ECB/OAEPwithSHA512andMGF1Padding", null,

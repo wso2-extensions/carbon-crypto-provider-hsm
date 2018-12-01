@@ -35,6 +35,7 @@ import org.wso2.carbon.crypto.provider.hsm.cryptoprovider.exception.HSMCryptoExc
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * This class is responsible for handling sessions between application and the HSM.
@@ -46,7 +47,7 @@ public class SessionHandler {
     private static Log log = LogFactory.getLog(SessionHandler.class);
     private static SessionHandler sessionHandler;
 
-    private Slot[] slotsWithTokens;
+    private Map<Long, Slot> slotsWithTokensMap;
     private Module pkcs11Module;
     private ServerConfigurationService serverConfigurationService;
     private HashMap<Integer, String> configuredSlots;
@@ -67,6 +68,7 @@ public class SessionHandler {
             String errorMessage = "PKCS #11 Module initialization failed.";
             throw new HSMCryptoException(errorMessage, e);
         }
+        slotsWithTokensMap = new HashMap<>();
         this.serverConfigurationService = serverConfigurationService;
         configuredSlots = new HashMap<Integer, String>();
         setupSlotConfiguration();
@@ -96,18 +98,21 @@ public class SessionHandler {
     /**
      * Initiate a session for a given slot.
      *
-     * @param slotNo : Slot number of the required session
+     * @param slotId : Slot ID of the required session
      * @return Instance of a Session.
      * @throws CryptoException
      */
-    public Session initiateSession(int slotNo, String slotPIN, boolean readWriteSession) throws CryptoException {
+    public Session initiateSession(int slotId, String slotPIN, boolean readWriteSession) throws CryptoException {
 
         if (log.isDebugEnabled()) {
-            log.debug(String.format("A session initiation request for slot id : %d.", slotNo));
+            log.debug(String.format("A session initiation request for slot id : %d.", slotId));
         }
-        if (slotsWithTokens == null) {
+        if (slotsWithTokensMap.isEmpty()) {
             try {
-                slotsWithTokens = pkcs11Module.getSlotList(Module.SlotRequirement.TOKEN_PRESENT);
+                Slot[] slotsWithTokens = pkcs11Module.getSlotList(Module.SlotRequirement.TOKEN_PRESENT);
+                for (Slot slot : slotsWithTokens) {
+                    slotsWithTokensMap.put(slot.getSlotID(), slot);
+                }
                 if (log.isDebugEnabled()) {
                     log.debug("List of slots with tokens successfully retrieved from the PKCS #11 module.");
                 }
@@ -116,27 +121,27 @@ public class SessionHandler {
                 throw new HSMCryptoException(errorMessage, e);
             }
         }
-        if (slotsWithTokens.length > slotNo) {
-            Slot slot = slotsWithTokens[slotNo];
+        if (slotsWithTokensMap.containsKey((long) slotId)) {
+            Slot slot = slotsWithTokensMap.get((long) slotId);
             try {
                 Token token = slot.getToken();
                 Session session = token.openSession(Token.SessionType.SERIAL_SESSION,
                         readWriteSession, null, null);
                 if (slotPIN == null) {
-                    session.login(Session.UserType.USER, getUserPIN(slotNo));
+                    session.login(Session.UserType.USER, getUserPIN(slotId));
                 } else {
                     session.login(Session.UserType.USER, slotPIN.toCharArray());
                 }
                 if (log.isDebugEnabled()) {
-                    log.debug(String.format("A session was initiated for slot id : %d.", slotNo));
+                    log.debug(String.format("A session was initiated for slot id : %d.", slotId));
                 }
                 return session;
             } catch (TokenException e) {
-                String errorMessage = String.format("Session initiation failed for slot id : '%d'.", slotNo);
+                String errorMessage = String.format("Session initiation failed for slot id : '%d'.", slotId);
                 throw new HSMCryptoException(errorMessage, e);
             }
         } else {
-            String errorMessage = String.format("Slot '%d' is not configured for cryptographic operations.", slotNo);
+            String errorMessage = String.format("Slot '%d' is not configured for cryptographic operations.", slotId);
             throw new CryptoException(errorMessage);
         }
     }

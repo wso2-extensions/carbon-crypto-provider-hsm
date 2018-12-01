@@ -47,7 +47,7 @@ public class SessionHandlerTest {
         try {
             Session session = sessionHandler.initiateSession(slotNo, null, readWrite);
             Assert.assertTrue((session.getSessionInfo().isRwSession() == readWrite));
-            //Close the created session.
+            // Close the created session.
             sessionHandler.closeSession(session);
         } catch (CryptoException e) {
 

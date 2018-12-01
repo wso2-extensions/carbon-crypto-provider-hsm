@@ -29,6 +29,7 @@ import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.wso2.carbon.base.api.ServerConfigurationService;
+import org.wso2.carbon.crypto.provider.hsm.storemanager.HSMStoreManagerService;
 import org.wso2.carbon.crypto.tenant.hsmstore.mgt.HSMTenantMgtListener;
 import org.wso2.carbon.stratos.common.listeners.TenantMgtListener;
 
@@ -41,24 +42,32 @@ import org.wso2.carbon.stratos.common.listeners.TenantMgtListener;
 )
 public class HSMTenantMgtComponent {
 
-    private static final Log log = LogFactory.getLog(HSMTenantMgtComponent.class);
+    private static final String HSM_STORE_ENABLE_PATH = "CryptoService.HSMBasedCryptoProviderConfig." +
+            "HSMStore.Enabled";
+
+    private static Log log = LogFactory.getLog(HSMTenantMgtComponent.class);
 
     private ServiceRegistration<TenantMgtListener> hsmTenantMgtListenerServiceRegistration;
 
     @Activate
     protected void activate(ComponentContext componentContext) {
-
-        try {
-            BundleContext bundleContext = componentContext.getBundleContext();
-            HSMTenantMgtListener hsmTenantMgtListener = new HSMTenantMgtListener();
-            hsmTenantMgtListenerServiceRegistration = bundleContext.registerService(TenantMgtListener.class,
-                    hsmTenantMgtListener, null);
-        } catch (Throwable e) {
-            String errorMessage = "An error occurred while activating HSM tenant management listener.";
-            log.error(errorMessage, e);
-        }
-        if (log.isInfoEnabled()) {
-            log.info("HSM tenant management listener has been activated successfully.");
+        if (isTenantMgtListenerActivated()) {
+            try {
+                BundleContext bundleContext = componentContext.getBundleContext();
+                HSMTenantMgtListener hsmTenantMgtListener = new HSMTenantMgtListener();
+                hsmTenantMgtListenerServiceRegistration = bundleContext.registerService(TenantMgtListener.class,
+                        hsmTenantMgtListener, null);
+            } catch (Throwable e) {
+                String errorMessage = "An error occurred while activating HSM tenant management listener.";
+                log.error(errorMessage, e);
+            }
+            if (log.isInfoEnabled()) {
+                log.info("HSM tenant management listener has been activated successfully.");
+            }
+        } else {
+            if (log.isInfoEnabled()) {
+                log.info("HSM Store is not enabled.");
+            }
         }
     }
 
@@ -82,5 +91,27 @@ public class HSMTenantMgtComponent {
     protected void unsetServerConfigurationService(ServerConfigurationService serverConfigurationService) {
 
         HSMTenantMgtDataHolder.unsetServerConfigurationService();
+    }
+
+    @Reference(
+            name = "hsmStoreManagerService",
+            service = HSMStoreManagerService.class,
+            cardinality = ReferenceCardinality.MANDATORY,
+            unbind = "unsetHSMStoreManagerService"
+    )
+    protected void setHSMStoreManagerService(HSMStoreManagerService storeManagerService) {
+
+        HSMTenantMgtDataHolder.setHsmStoreManagerService(storeManagerService);
+    }
+
+    protected void unsetHSMStoreManagerService(HSMStoreManagerService storeManagerService) {
+
+        HSMTenantMgtDataHolder.unsetHsmStoreManagerService();
+    }
+
+    protected boolean isTenantMgtListenerActivated() {
+
+        return Boolean.parseBoolean(HSMTenantMgtDataHolder.getServerConfigurationService().
+                getFirstProperty(HSM_STORE_ENABLE_PATH));
     }
 }

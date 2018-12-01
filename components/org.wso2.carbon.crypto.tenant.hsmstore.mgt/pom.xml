@@ -23,7 +23,7 @@
     <parent>
         <artifactId>carbon-crypto-provider-hsm</artifactId>
         <groupId>org.wso2.carbon.crypto</groupId>
-        <version>1.0.0</version>
+        <version>1.0.0-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
@@ -94,7 +94,9 @@
                             org.wso2.carbon.crypto.api; version="${carbon.crypto.api.imp.pkg.version.range}",
                             org.wso2.carbon.core.util.*; version="${carbon.kernel.imp.pkg.version.range}",
                             org.wso2.carbon.stratos.common.*; version="${carbon.commons.imp.pkg.version}",
-                            org.wso2.carbon.crypto.provider.hsm.*,
+                            org.wso2.carbon.crypto.provider.hsm,
+                            org.wso2.carbon.crypto.provider.hsm.storemanager,
+                            org.wso2.carbon.crypto.provider.hsm.cryptoprovider.util,
                             iaik.pkcs.pkcs11.*; version="${pkcs11.wrapper.imp.pkg.version.range}",
                         </Import-Package>
                         <Export-Package>

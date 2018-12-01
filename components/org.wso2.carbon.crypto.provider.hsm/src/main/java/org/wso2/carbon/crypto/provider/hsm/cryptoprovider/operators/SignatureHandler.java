@@ -103,7 +103,7 @@ public class SignatureHandler {
                 session.verify(dataToVerify, signature);
                 verified = true;
             } catch (TokenException e) {
-                //PKCS #11 standard error code for signature verification failure.
+                // Check if the PKCS #11 standard error code for signature verification failure is thrown.
                 if (!e.getMessage().equals("CKR_SIGNATURE_INVALID")) {
                     String errorMessage = String.format("Error occurred during verifying the signature using " +
                             "algorithm '%s'.", verifyMechanism.getName());

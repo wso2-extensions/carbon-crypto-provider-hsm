@@ -23,7 +23,7 @@
     <parent>
         <artifactId>carbon-crypto-provider-hsm</artifactId>
         <groupId>org.wso2.carbon.crypto</groupId>
-        <version>1.0.0</version>
+        <version>1.0.0-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
@@ -142,7 +142,6 @@
                         </Import-Package>
                         <Export-Package>
                             !org.wso2.carbon.crypto.provider.hsm.internal,
-                            org.wso2.carbon.crypto.provider.hsm.cryptoprovider; version="${project.version}",
                             org.wso2.carbon.crypto.provider.hsm.*; version="${project.version}",
                         </Export-Package>
                     </instructions>

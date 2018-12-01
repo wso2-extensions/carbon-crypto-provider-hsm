@@ -25,7 +25,7 @@
     <groupId>org.wso2.carbon.crypto</groupId>
     <artifactId>carbon-crypto-provider-hsm</artifactId>
     <packaging>pom</packaging>
-    <version>1.0.0</version>
+    <version>1.0.0-SNAPSHOT</version>
 
     <repositories>
         <repository>
@@ -110,11 +110,6 @@
                 <groupId>org.wso2.carbon.crypto</groupId>
                 <artifactId>org.wso2.carbon.crypto.api</artifactId>
                 <version>${carbon.crypto.api.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.wso2.carbon</groupId>
-                <artifactId>org.wso2.carbon.core</artifactId>
-                <version>${carbon.kernel.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.wso2.carbon.commons</groupId>
@@ -288,7 +283,7 @@
         <pkcs11.wrapper.imp.pkg.version.range>[0.0.0, 1.0.0]</pkcs11.wrapper.imp.pkg.version.range>
 
         <!-- Dependency versions -->
-        <carbon.kernel.version>4.4.11</carbon.kernel.version>
+        <carbon.kernel.version>4.4.36</carbon.kernel.version>
         <commons-lang.wso2.version>2.6.0.wso2v1</commons-lang.wso2.version>
         <equinox.osgi.version>3.9.1.v20130814-1242</equinox.osgi.version>
         <equinox.osgi.services.version>3.5.100.v20160504-1419</equinox.osgi.services.version>

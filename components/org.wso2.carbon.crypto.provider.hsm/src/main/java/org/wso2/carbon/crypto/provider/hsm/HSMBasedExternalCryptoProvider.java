@@ -50,6 +50,7 @@ import org.wso2.carbon.crypto.provider.hsm.cryptoprovider.objecthandlers.Certifi
 import org.wso2.carbon.crypto.provider.hsm.cryptoprovider.objecthandlers.KeyHandler;
 import org.wso2.carbon.crypto.provider.hsm.cryptoprovider.operators.Cipher;
 import org.wso2.carbon.crypto.provider.hsm.cryptoprovider.operators.SignatureHandler;
+import org.wso2.carbon.crypto.provider.hsm.cryptoprovider.util.CryptoConstants;
 import org.wso2.carbon.crypto.provider.hsm.cryptoprovider.util.KeyTemplateGenerator;
 import org.wso2.carbon.crypto.provider.hsm.cryptoprovider.util.MechanismDataHolder;
 import org.wso2.carbon.crypto.provider.hsm.cryptoprovider.util.MechanismResolver;
@@ -108,17 +109,22 @@ public class HSMBasedExternalCryptoProvider implements ExternalCryptoProvider {
                        PrivateKeyInfo privateKeyInfo) throws CryptoException {
 
         failIfMethodParametersInvalid(algorithm);
-        logDebug(String.format("Signing data with %s algorithm and %s private key using HSM device.", algorithm,
-                privateKeyInfo.getKeyAlias()));
+        if (log.isDebugEnabled()) {
+            log.debug(String.format("Signing data with %s algorithm and %s private key using HSM device.", algorithm,
+                    privateKeyInfo.getKeyAlias()));
+        }
         Mechanism signMechanism = mechanismResolver.resolveMechanism(new MechanismDataHolder(SIGN_MODE, algorithm));
         Session session = initiateSession(slotResolver.resolveSlot(cryptoContext), false);
-        PrivateKey signingKey = retrievePrivateKey(session, privateKeyInfo);
-        SignatureHandler signatureHandler = new SignatureHandler(session);
         try {
-            return signatureHandler.sign(data, signingKey, signMechanism);
+            PrivateKey signingKey = retrievePrivateKey(session, privateKeyInfo);
+            SignatureHandler signatureHandler = new SignatureHandler(session);
+            byte[] signedData = signatureHandler.sign(data, signingKey, signMechanism);
+            if (log.isDebugEnabled()) {
+                log.debug(String.format("Successfully signed data with %s algorithm and %s private key using HSM device.",
+                        algorithm, privateKeyInfo.getKeyAlias()));
+            }
+            return signedData;
         } finally {
-            logDebug(String.format("Successfully signed data with %s algorithm and %s private key using HSM device.",
-                    algorithm, privateKeyInfo.getKeyAlias()));
             sessionHandler.closeSession(session);
         }
     }
@@ -140,18 +146,23 @@ public class HSMBasedExternalCryptoProvider implements ExternalCryptoProvider {
                           CryptoContext cryptoContext, PrivateKeyInfo privateKeyInfo) throws CryptoException {
 
         failIfMethodParametersInvalid(algorithm);
-        logDebug(String.format("Decrypting data with %s algorithm and %s private key using HSM device.",
-                algorithm, privateKeyInfo.getKeyAlias()));
+        if (log.isDebugEnabled()) {
+            log.debug(String.format("Decrypting data with %s algorithm and %s private key using HSM device.",
+                    algorithm, privateKeyInfo.getKeyAlias()));
+        }
         Mechanism decryptionMechanism = mechanismResolver.resolveMechanism(
                 new MechanismDataHolder(DECRYPT_MODE, algorithm));
         Session session = initiateSession(slotResolver.resolveSlot(cryptoContext), false);
-        PrivateKey decryptionKey = retrievePrivateKey(session, privateKeyInfo);
-        Cipher cipher = new Cipher(session);
         try {
-            return cipher.decrypt(ciphertext, decryptionKey, decryptionMechanism);
+            PrivateKey decryptionKey = retrievePrivateKey(session, privateKeyInfo);
+            Cipher cipher = new Cipher(session);
+            byte[] decryptedData = cipher.decrypt(ciphertext, decryptionKey, decryptionMechanism);
+            if (log.isDebugEnabled()) {
+                log.debug(String.format("Successfully decrypted data with %s algorithm and %s private key using HSM device.",
+                        algorithm, privateKeyInfo.getKeyAlias()));
+            }
+            return decryptedData;
         } finally {
-            logDebug(String.format("Successfully decrypted data with %s algorithm and %s private key using HSM device.",
-                    algorithm, privateKeyInfo.getKeyAlias()));
             sessionHandler.closeSession(session);
         }
     }
@@ -177,18 +188,23 @@ public class HSMBasedExternalCryptoProvider implements ExternalCryptoProvider {
                           CryptoContext cryptoContext, CertificateInfo certificateInfo) throws CryptoException {
 
         failIfMethodParametersInvalid(algorithm);
-        logDebug(String.format("Encrypting data with %s algorithm using HSM device with public certificate : %s",
-                algorithm, certificateInfo));
+        if (log.isDebugEnabled()) {
+            log.debug(String.format("Encrypting data with %s algorithm using HSM device with public certificate : %s",
+                    algorithm, certificateInfo));
+        }
         Mechanism encryptionMechanism = mechanismResolver.resolveMechanism(
                 new MechanismDataHolder(ENCRYPT_MODE, algorithm));
         Session session = initiateSession(slotResolver.resolveSlot(cryptoContext), false);
-        PublicKey encryptionKey = retrievePublicKey(session, certificateInfo);
-        Cipher cipher = new Cipher(session);
         try {
-            return cipher.encrypt(data, encryptionKey, encryptionMechanism);
+            PublicKey encryptionKey = retrievePublicKey(session, certificateInfo);
+            Cipher cipher = new Cipher(session);
+            byte[] encryptedData = cipher.encrypt(data, encryptionKey, encryptionMechanism);
+            if (log.isDebugEnabled()) {
+                log.debug(String.format("Successfully encrypted data with %s algorithm using HSM device with public " +
+                        "certificate : %s", algorithm, certificateInfo));
+            }
+            return encryptedData;
         } finally {
-            logDebug(String.format("Successfully encrypted data with %s algorithm using HSM device with public " +
-                    "certificate : %s", algorithm, certificateInfo));
             sessionHandler.closeSession(session);
         }
     }
@@ -215,17 +231,22 @@ public class HSMBasedExternalCryptoProvider implements ExternalCryptoProvider {
                                    CryptoContext cryptoContext, CertificateInfo certificateInfo) throws CryptoException {
 
         failIfMethodParametersInvalid(algorithm);
-        logDebug(String.format("Verifying digital signature with %s algorithm using the HSM device with public " +
-                "certificate : %s", algorithm, certificateInfo));
+        if (log.isDebugEnabled()) {
+            log.debug(String.format("Verifying digital signature with %s algorithm using the HSM device with public " +
+                    "certificate : %s", algorithm, certificateInfo));
+        }
         Mechanism verifyMechanism = mechanismResolver.resolveMechanism(new MechanismDataHolder(VERIFY_MODE, algorithm));
         Session session = initiateSession(slotResolver.resolveSlot(cryptoContext), false);
-        PublicKey verificationKey = retrievePublicKey(session, certificateInfo);
-        SignatureHandler signatureHandler = new SignatureHandler(session);
         try {
-            return signatureHandler.verify(data, signature, verificationKey, verifyMechanism);
+            PublicKey verificationKey = retrievePublicKey(session, certificateInfo);
+            SignatureHandler signatureHandler = new SignatureHandler(session);
+            boolean verification = signatureHandler.verify(data, signature, verificationKey, verifyMechanism);
+            if (log.isDebugEnabled()) {
+                log.debug(String.format("Successfully verified digital signature with %s algorithm using the HSM device " +
+                        "with public certificate : %s", algorithm, certificateInfo));
+            }
+            return verification;
         } finally {
-            logDebug(String.format("Successfully verified digital signature with %s algorithm using the HSM device " +
-                    "with public certificate : %s", algorithm, certificateInfo));
             sessionHandler.closeSession(session);
         }
     }
@@ -246,10 +267,18 @@ public class HSMBasedExternalCryptoProvider implements ExternalCryptoProvider {
                                                          CertificateInfo certificateInfo) throws CryptoException {
 
         failIfContextInformationIsMissing(cryptoContext);
-        logDebug(String.format("Retrieving certificate with alias %s related to crypto context : '%s' " +
-                "from the HSM device.", certificateInfo.getCertificateAlias(), cryptoContext));
+        if (log.isDebugEnabled()) {
+            log.debug(String.format("Retrieving certificate with alias %s related to crypto context : '%s' " +
+                    "from the HSM device.", certificateInfo.getCertificateAlias(), cryptoContext));
+        }
         Certificate retrievedCertificate = retrieveCertificate(certificateInfo.getCertificateAlias(), cryptoContext);
-        return PKCS11JCEObjectMapper.mapCertificatePKCS11ToJCE(retrievedCertificate);
+        java.security.cert.Certificate certificate = PKCS11JCEObjectMapper
+                .mapCertificatePKCS11ToJCE(retrievedCertificate);
+        if (log.isDebugEnabled()) {
+            log.debug(String.format("Successfully retrieved the certificate related to crypto context : ",
+                    cryptoContext));
+        }
+        return certificate;
     }
 
     /**
@@ -269,17 +298,24 @@ public class HSMBasedExternalCryptoProvider implements ExternalCryptoProvider {
                                                   PrivateKeyInfo privateKeyInfo) throws CryptoException {
 
         failIfContextInformationIsMissing(cryptoContext);
-        logDebug(String.format("Retrieving %s private key related crypto context : '%s' from HSM device",
-                privateKeyInfo.getKeyAlias(), cryptoContext));
-        Session session = initiateSession(slotResolver.resolveSlot(cryptoContext), false);
+        if (log.isDebugEnabled()) {
+            log.debug(String.format("Retrieving %s private key related crypto context : '%s' from HSM device",
+                    privateKeyInfo.getKeyAlias(), cryptoContext));
+        }
         PrivateKey retrievedKey;
+        Session session = initiateSession(slotResolver.resolveSlot(cryptoContext), false);
         try {
             retrievedKey = retrievePrivateKey(session, privateKeyInfo);
         } finally {
             sessionHandler.closeSession(session);
         }
         if (!retrievedKey.getSensitive().getBooleanValue() && retrievedKey.getExtractable().getBooleanValue()) {
-            return PKCS11JCEObjectMapper.mapPrivateKeyPKCS11ToJCE(retrievedKey);
+            java.security.PrivateKey privateKey = PKCS11JCEObjectMapper.mapPrivateKeyPKCS11ToJCE(retrievedKey);
+            if (log.isDebugEnabled()) {
+                log.debug(String.format("Successfully retrieved the private key related to crypto context : %s",
+                        cryptoContext));
+            }
+            return privateKey;
         } else {
             String errorMessage = String.format("Requested private key %s is not extractable.",
                     privateKeyInfo.getKeyAlias());
@@ -292,7 +328,7 @@ public class HSMBasedExternalCryptoProvider implements ExternalCryptoProvider {
      * Hybrid encryption is carried out using the underlying HSM device.
      * Session object is created for symmetric key for decryption.
      *
-     * @param hybridEncryptionInput Input data for hybrid encryption.*
+     * @param hybridEncryptionInput Input data for hybrid encryption.
      * @param symmetricAlgorithm    The symmetric encryption/decryption algorithm.
      * @param asymmetricAlgorithm   The asymmetric encryption/decryption algorithm.
      * @param javaSecurityProvider  The Java Security API provider. This value is discarded in this component.
@@ -307,29 +343,43 @@ public class HSMBasedExternalCryptoProvider implements ExternalCryptoProvider {
                                                 CryptoContext cryptoContext, CertificateInfo certificateInfo)
             throws CryptoException {
 
-        logDebug(String.format("Hybrid encrypting data with %s symmetric algorithm and %s asymmetric algorithm, " +
-                "using HSM device with certificate : %s.", symmetricAlgorithm, asymmetricAlgorithm, certificateInfo));
+        if (log.isDebugEnabled()) {
+            log.debug(String.format("Hybrid encrypting data with %s symmetric algorithm and %s asymmetric algorithm," +
+                    " using HSM device with certificate : %s.", symmetricAlgorithm, asymmetricAlgorithm, certificateInfo));
+        }
         MechanismDataHolder mechanismDataHolder = new MechanismDataHolder(ENCRYPT_MODE, symmetricAlgorithm,
                 hybridEncryptionInput.getAuthData());
         Mechanism symmetricMechanism = mechanismResolver.resolveMechanism(mechanismDataHolder);
+        SecretKey encryptionKey;
+        byte[] encryptedData;
         Session session = initiateSession(slotResolver.resolveSlot(cryptoContext), true);
-        //Retrieving symmetric key for symmetric encryption.
-        SecretKey encryptionKey = getSymmetricKey(session, symmetricAlgorithm, null, true);
-        byte[] encryptedData = symmetricEncrypt(session, symmetricMechanism, encryptionKey,
-                hybridEncryptionInput.getPlainData());
-        logDebug(String.format("Successfully encrypted the plain data with %s symmetric algorithm and %s symmetric " +
-                "key.", symmetricAlgorithm, encryptionKey.getClass().getName()));
-        //Encrypting symmetric key.
+        try {
+            // Retrieving symmetric key for symmetric encryption.
+            encryptionKey = generateRandomSymmetricKey(session, symmetricAlgorithm);
+            encryptedData = symmetricEncrypt(session, symmetricMechanism, encryptionKey,
+                    hybridEncryptionInput.getPlainData());
+            if (log.isDebugEnabled()) {
+                log.debug(String.format("Successfully encrypted the plain data with %s symmetric algorithm and %s symmetric " +
+                        "key.", symmetricAlgorithm, encryptionKey.getClass().getName()));
+            }
+        } finally {
+            sessionHandler.closeSession(session);
+        }
+        // Encrypting symmetric key.
         byte[] encryptedKey = encryptSymmetricKey(encryptionKey, asymmetricAlgorithm, cryptoContext, certificateInfo);
-        logDebug(String.format("Successfully encrypted '%s' symmetric key for hybrid encryption with %s asymmetric " +
-                        "algorithm and public certificate : %s", encryptionKey.getClass().getName(),
-                asymmetricAlgorithm, certificateInfo));
-        //Generating output of the hybrid encryption.
+        if (log.isDebugEnabled()) {
+            log.debug(String.format("Successfully encrypted '%s' symmetric key for hybrid encryption with %s asymmetric " +
+                            "algorithm and public certificate : %s", encryptionKey.getClass().getName(),
+                    asymmetricAlgorithm, certificateInfo));
+        }
+        // Generating output of the hybrid encryption.
         HybridEncryptionOutput hybridEncryptionOutput = generateHybridEncryptionOutput(symmetricMechanism,
                 encryptedData, encryptedKey);
-        logDebug(String.format("Successfully hybrid encrypted data with %s symmetric algorithm and %s asymmetric " +
-                        "algorithm, using HSM device with certificate : %s.", symmetricAlgorithm,
-                asymmetricAlgorithm, certificateInfo));
+        if (log.isDebugEnabled()) {
+            log.debug(String.format("Successfully hybrid encrypted data with %s symmetric algorithm and %s asymmetric " +
+                            "algorithm, using HSM device with certificate : %s.", symmetricAlgorithm,
+                    asymmetricAlgorithm, certificateInfo));
+        }
         return hybridEncryptionOutput;
     }
 
@@ -352,20 +402,24 @@ public class HSMBasedExternalCryptoProvider implements ExternalCryptoProvider {
                                 String asymmetricAlgorithm, String javaSecurityProvider, CryptoContext cryptoContext,
                                 PrivateKeyInfo privateKeyInfo) throws CryptoException {
 
-        logDebug(String.format("Hybrid decrypting data with %s symmetric algorithm and %s asymmetric algorithm, " +
-                        "using HSM device with private key %s.", symmetricAlgorithm, asymmetricAlgorithm,
-                privateKeyInfo.getKeyAlias()));
-        //Decrypting symmetric key value used for data encryption.
+        if (log.isDebugEnabled()) {
+            log.debug(String.format("Hybrid decrypting data with %s symmetric algorithm and %s asymmetric algorithm, " +
+                            "using HSM device with private key %s.", symmetricAlgorithm, asymmetricAlgorithm,
+                    privateKeyInfo.getKeyAlias()));
+        }
+        // Decrypting symmetric key value used for data encryption.
         byte[] decryptionKeyValue = decrypt(hybridDecryptionInput.getEncryptedSymmetricKey(), asymmetricAlgorithm,
                 javaSecurityProvider, cryptoContext, privateKeyInfo);
-        logDebug(String.format("Successfully decrypted the value of symmetric key used for hybrid encryption."));
+        if (log.isDebugEnabled()) {
+            log.debug(String.format("Successfully decrypted the value of symmetric key used for hybrid encryption."));
+        }
         MechanismDataHolder mechanismDataHolder = new MechanismDataHolder(DECRYPT_MODE, symmetricAlgorithm,
                 hybridDecryptionInput.getParameterSpec(), hybridDecryptionInput.getAuthData());
         Mechanism decryptionMechanism = mechanismResolver.resolveMechanism(mechanismDataHolder);
         Session session = initiateSession(slotResolver.resolveSlot(cryptoContext), true);
         try {
-            //Generating a symmetric key with given value, for data decryption.
-            SecretKey decryptionKey = getSymmetricKey(session, symmetricAlgorithm, decryptionKeyValue, false);
+            // Generating a symmetric key with given value, for data decryption.
+            SecretKey decryptionKey = generateSecretKeyHandle(session, symmetricAlgorithm, decryptionKeyValue);
             Cipher cipher = new Cipher(session);
             if (hybridDecryptionInput.getAuthTag() != null) {
                 byte[] encryptedData = concatByteArrays(new byte[][]{hybridDecryptionInput.getCipherData(),
@@ -375,9 +429,6 @@ public class HSMBasedExternalCryptoProvider implements ExternalCryptoProvider {
                 return cipher.decrypt(hybridDecryptionInput.getCipherData(), decryptionKey, decryptionMechanism);
             }
         } finally {
-            logDebug(String.format("Successfully hybrid decrypted data with %s symmetric algorithm and %s asymmetric" +
-                            " algorithm, using HSM device with private key %s.", symmetricAlgorithm,
-                    asymmetricAlgorithm, privateKeyInfo.getKeyAlias()));
             sessionHandler.closeSession(session);
         }
     }
@@ -385,12 +436,8 @@ public class HSMBasedExternalCryptoProvider implements ExternalCryptoProvider {
     protected byte[] symmetricEncrypt(Session session, Mechanism symmetricAlgorithm, Key encryptionKey,
                                       byte[] plainData) throws CryptoException {
 
-        try {
-            Cipher cipher = new Cipher(session);
-            return cipher.encrypt(plainData, encryptionKey, symmetricAlgorithm);
-        } finally {
-            sessionHandler.closeSession(session);
-        }
+        Cipher cipher = new Cipher(session);
+        return cipher.encrypt(plainData, encryptionKey, symmetricAlgorithm);
     }
 
     protected Session initiateSession(SlotInfo slotInfo, boolean readWrite) throws CryptoException {
@@ -416,8 +463,10 @@ public class HSMBasedExternalCryptoProvider implements ExternalCryptoProvider {
 
     protected PublicKey retrievePublicKey(Session session, CertificateInfo certificateInfo) throws CryptoException {
 
-        logDebug(String.format("Retrieving public key from certificate with alias %s",
-                certificateInfo.getCertificateAlias()));
+        if (log.isDebugEnabled()) {
+            log.debug(String.format("Retrieving public key from certificate with alias %s",
+                    certificateInfo.getCertificateAlias()));
+        }
         if (certificateInfo.getCertificate() != null) {
             java.security.PublicKey publicKey = certificateInfo.getCertificate().getPublicKey();
             if (!(publicKey instanceof java.security.interfaces.RSAPublicKey)) {
@@ -443,8 +492,10 @@ public class HSMBasedExternalCryptoProvider implements ExternalCryptoProvider {
 
     protected PrivateKey retrievePrivateKey(Session session, PrivateKeyInfo privateKeyInfo) throws CryptoException {
 
-        logDebug(String.format("Retrieving private key with alias '%s' from HSM device.",
-                privateKeyInfo.getKeyAlias()));
+        if (log.isDebugEnabled()) {
+            log.debug(String.format("Retrieving private key with alias '%s' from HSM device.",
+                    privateKeyInfo.getKeyAlias()));
+        }
         PrivateKey privateKeyTemplate = new PrivateKey();
         privateKeyTemplate.getLabel().setCharArrayValue(privateKeyInfo.getKeyAlias().toCharArray());
         privateKeyTemplate.getObjectClass().setLongValue(PKCS11Constants.CKO_PRIVATE_KEY);
@@ -463,57 +514,80 @@ public class HSMBasedExternalCryptoProvider implements ExternalCryptoProvider {
         certificateTemplate.getLabel().setCharArrayValue(label.toCharArray());
         certificateTemplate.getObjectClass().setLongValue(PKCS11Constants.CKO_CERTIFICATE);
         Session session = initiateSession(slotResolver.resolveSlot(cryptoContext), false);
-        CertificateHandler certificateHandler = new CertificateHandler(session);
         try {
+            CertificateHandler certificateHandler = new CertificateHandler(session);
             return certificateHandler.getCertificate(certificateTemplate);
         } finally {
             sessionHandler.closeSession(session);
         }
     }
 
-    protected SecretKey getSymmetricKey(Session session, String algorithm, byte[] value,
-                                        boolean encryptMode) throws CryptoException {
+    protected SecretKey generateRandomSymmetricKey(Session session, String symmetricAlgorithm) throws CryptoException {
 
-        String[] keySpecification = algorithm.split("/")[0].split("_");
+        String[] keySpecification = symmetricAlgorithm.split("/")[0].split("_");
         String keyType = keySpecification[0];
         String errorMessage = String.format("Requested key type generation is not supported for '%s' " +
-                "algorithm", algorithm);
+                "algorithm", symmetricAlgorithm);
         SecretKey secretKeyTemplate;
-        if (encryptMode) {
-            if (keyType.equals("AES")) {
+        switch (keyType) {
+            case (CryptoConstants.KeyType.AES):
                 long keyLength = 32L;
                 if (keySpecification.length > 1) {
                     keyLength = Long.parseLong(keySpecification[1]) / 8;
                 }
                 secretKeyTemplate = KeyTemplateGenerator.generateAESKeyTemplate();
                 ((AESSecretKey) secretKeyTemplate).getValueLen().setLongValue(keyLength);
-            } else if (keyType.equals("DES")) {
+                break;
+            case (CryptoConstants.KeyType.DES):
                 secretKeyTemplate = KeyTemplateGenerator.generateDESKeyTemplate();
-            } else if (keyType.equals("DES2")) {
+                break;
+            case (CryptoConstants.KeyType.DES2):
                 secretKeyTemplate = KeyTemplateGenerator.generateDES2KeyTemplate();
-            } else if (keyType.equals("3DES") || keyType.equals("DESede")) {
+                break;
+            case (CryptoConstants.KeyType.DES3):
                 secretKeyTemplate = KeyTemplateGenerator.generateDES3KeyTemplate();
-            } else {
+                break;
+            case (CryptoConstants.KeyType.DESede):
+                secretKeyTemplate = KeyTemplateGenerator.generateDES3KeyTemplate();
+                break;
+            default:
                 throw new CryptoException(errorMessage);
-            }
-        } else {
-            if (keyType.equals("AES")) {
+        }
+        return generateKey(secretKeyTemplate, true, keyType, session);
+    }
+
+    protected SecretKey generateSecretKeyHandle(Session session, String symmetricAlgorithm, byte[] value) throws CryptoException {
+
+        String[] keySpecification = symmetricAlgorithm.split("/")[0].split("_");
+        String keyType = keySpecification[0];
+        String errorMessage = String.format("Requested key type generation is not supported for '%s' " +
+                "algorithm", symmetricAlgorithm);
+        SecretKey secretKeyTemplate;
+        switch (keyType) {
+            case (CryptoConstants.KeyType.AES):
                 secretKeyTemplate = KeyTemplateGenerator.generateAESKeyTemplate();
                 ((AESSecretKey) secretKeyTemplate).getValue().setValue(value);
-            } else if (keyType.equals("DES")) {
+                break;
+            case (CryptoConstants.KeyType.DES):
                 secretKeyTemplate = KeyTemplateGenerator.generateDESKeyTemplate();
                 ((DESSecretKey) secretKeyTemplate).getValue().setValue(value);
-            } else if (keyType.equals("DES2")) {
+                break;
+            case (CryptoConstants.KeyType.DES2):
                 secretKeyTemplate = KeyTemplateGenerator.generateDES2KeyTemplate();
                 ((DES2SecretKey) secretKeyTemplate).getValue().setValue(value);
-            } else if (keyType.equals("3DES") || keyType.equals("DESede")) {
+                break;
+            case (CryptoConstants.KeyType.DES3):
                 secretKeyTemplate = KeyTemplateGenerator.generateDES3KeyTemplate();
                 ((DES3SecretKey) secretKeyTemplate).getValue().setValue(value);
-            } else {
+                break;
+            case (CryptoConstants.KeyType.DESede):
+                secretKeyTemplate = KeyTemplateGenerator.generateDES3KeyTemplate();
+                ((DES3SecretKey) secretKeyTemplate).getValue().setValue(value);
+                break;
+            default:
                 throw new CryptoException(errorMessage);
-            }
         }
-        return generateKey(secretKeyTemplate, encryptMode, keyType, session);
+        return generateKey(secretKeyTemplate, false, keyType, session);
     }
 
     protected SecretKey generateKey(SecretKey secretKeyTemplate, boolean encryptMode, String keyGenAlgo, Session
@@ -554,9 +628,11 @@ public class HSMBasedExternalCryptoProvider implements ExternalCryptoProvider {
     protected byte[] encryptSymmetricKey(SecretKey encryptionKey, String asymmetricAlgorithm, CryptoContext cryptoContext,
                                          CertificateInfo certificateInfo) throws CryptoException {
 
-        logDebug(String.format("Encrypting generated '%s' symmetric key for hybrid encryption with %s asymmetric " +
-                        "algorithm and public certificate : %s", encryptionKey.getClass().getName(),
-                asymmetricAlgorithm, certificateInfo));
+        if (log.isDebugEnabled()) {
+            log.debug(String.format("Encrypting generated '%s' symmetric key for hybrid encryption with %s asymmetric " +
+                            "algorithm and public certificate : %s", encryptionKey.getClass().getName(),
+                    asymmetricAlgorithm, certificateInfo));
+        }
         if (encryptionKey instanceof AESSecretKey) {
             return encrypt(((AESSecretKey) encryptionKey).getValue().getByteArrayValue(),
                     asymmetricAlgorithm, null, cryptoContext, certificateInfo);
@@ -595,12 +671,5 @@ public class HSMBasedExternalCryptoProvider implements ExternalCryptoProvider {
             }
         }
         return outputStream.toByteArray();
-    }
-
-    protected void logDebug(String message) {
-
-        if (log.isDebugEnabled()) {
-            log.debug(message);
-        }
     }
 }

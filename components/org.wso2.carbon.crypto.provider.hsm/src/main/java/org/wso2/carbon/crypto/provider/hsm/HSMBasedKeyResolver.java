@@ -78,8 +78,10 @@ public class HSMBasedKeyResolver extends KeyResolver {
             keyAlias = cryptoContext.getTenantDomain();
             keyPassword = null; // Key password will be internally handled by the KeyStoreManager
         }
-        logDebug(String.format("Successfully resolved private key information related to crypto context : %s",
-                cryptoContext));
+        if (log.isDebugEnabled()) {
+            log.debug(String.format("Successfully resolved private key information related to crypto context : %s",
+                    cryptoContext));
+        }
         return new PrivateKeyInfo(keyAlias, null);
     }
 
@@ -99,15 +101,10 @@ public class HSMBasedKeyResolver extends KeyResolver {
         } else {
             certificateAlias = cryptoContext.getTenantDomain();
         }
-        logDebug(String.format("Successfully resolved certificate information related to crypto context : %s",
-                cryptoContext));
-        return new CertificateInfo(certificateAlias, null);
-    }
-
-    protected void logDebug(String message) {
-
         if (log.isDebugEnabled()) {
-            log.debug(message);
+            log.debug(String.format("Successfully resolved certificate information related to crypto context : %s",
+                    cryptoContext));
         }
+        return new CertificateInfo(certificateAlias, null);
     }
 }

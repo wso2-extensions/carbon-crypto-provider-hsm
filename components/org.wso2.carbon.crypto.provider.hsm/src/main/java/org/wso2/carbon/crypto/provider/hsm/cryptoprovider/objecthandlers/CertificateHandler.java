@@ -55,6 +55,7 @@ public class CertificateHandler {
 
         try {
             session.findObjectsInit(certificateTemplate);
+            // Retrieves certificate object matching to given template.
             Object[] certificateArray = session.findObjects(1);
             if (certificateArray.length > 0) {
                 if (log.isDebugEnabled()) {
@@ -82,8 +83,10 @@ public class CertificateHandler {
      */
     public void storeCertificate(Certificate certificate) throws HSMCryptoException {
 
+        // Make the certificate a token object.
         certificate.getToken().setBooleanValue(true);
         try {
+            // Store the certificate in the slot related to session.
             session.createObject(certificate);
             if (log.isDebugEnabled()) {
                 log.debug(String.format("Certificate with alias %s, stored successfully in HSM device.",

@@ -88,21 +88,24 @@ public class HSMBasedInternalCryptoProvider implements InternalCryptoProvider {
     public byte[] encrypt(byte[] cleartext, String algorithm, String javaSecurityAPIProvider) throws CryptoException {
 
         failIfMethodParametersInvalid(algorithm, cleartext);
-        logDebug(String.format("Encrypting data with %s algorithm using HSM device with %s public key.",
-                algorithm, keyAlias));
-        PublicKey publicKeyTemplate = new PublicKey();
-        publicKeyTemplate.getLabel().setCharArrayValue(keyAlias.toCharArray());
-        publicKeyTemplate.getObjectClass().setLongValue(PKCS11Constants.CKO_PUBLIC_KEY);
+        if (log.isDebugEnabled()) {
+            log.debug(String.format("Encrypting data with %s algorithm using HSM device with %s public key.",
+                    algorithm, keyAlias));
+        }
+        PublicKey publicKeyTemplate = (PublicKey) generateKeyTemplate(new PublicKey(), keyAlias);
         Mechanism encryptionMechanism = mechanismResolver.resolveMechanism(
                 new MechanismDataHolder(ENCRYPT_MODE, algorithm));
         Session session = initiateSession(getInternalProviderSlotInfo());
-        PublicKey encryptionKey = (PublicKey) retrieveKey(publicKeyTemplate, session);
-        Cipher cipher = new Cipher(session);
         try {
-            return cipher.encrypt(cleartext, encryptionKey, encryptionMechanism);
+            PublicKey encryptionKey = (PublicKey) retrieveKey(publicKeyTemplate, session);
+            Cipher cipher = new Cipher(session);
+            byte[] encryptedData = cipher.encrypt(cleartext, encryptionKey, encryptionMechanism);
+            if (log.isDebugEnabled()) {
+                log.debug(String.format("Successfully encrypted data with %s algorithm using HSM device with %s public " +
+                        "key", algorithm, keyAlias));
+            }
+            return encryptedData;
         } finally {
-            logDebug(String.format("Successfully encrypted data with %s algorithm using HSM device with %s public " +
-                    "key", algorithm, keyAlias));
             sessionHandler.closeSession(session);
         }
     }
@@ -121,21 +124,24 @@ public class HSMBasedInternalCryptoProvider implements InternalCryptoProvider {
     public byte[] decrypt(byte[] ciphertext, String algorithm, String javaSecurityAPIProvider) throws CryptoException {
 
         failIfMethodParametersInvalid(algorithm, ciphertext);
-        logDebug(String.format("Decrypting data with %s algorithm and %s private key using HSM device.",
-                algorithm, keyAlias));
-        PrivateKey privateKeyTemplate = new PrivateKey();
-        privateKeyTemplate.getLabel().setCharArrayValue(keyAlias.toCharArray());
-        privateKeyTemplate.getObjectClass().setLongValue(PKCS11Constants.CKO_PRIVATE_KEY);
+        if (log.isDebugEnabled()) {
+            log.debug(String.format("Decrypting data with %s algorithm and %s private key using HSM device.",
+                    algorithm, keyAlias));
+        }
+        PrivateKey privateKeyTemplate = (PrivateKey) generateKeyTemplate(new PrivateKey(), keyAlias);
         Mechanism decryptionMechanism = mechanismResolver.resolveMechanism(
                 new MechanismDataHolder(DECRYPT_MODE, algorithm));
         Session session = initiateSession(getInternalProviderSlotInfo());
-        PrivateKey decryptionKey = (PrivateKey) retrieveKey(privateKeyTemplate, session);
-        Cipher cipher = new Cipher(session);
         try {
-            return cipher.decrypt(ciphertext, decryptionKey, decryptionMechanism);
+            PrivateKey decryptionKey = (PrivateKey) retrieveKey(privateKeyTemplate, session);
+            Cipher cipher = new Cipher(session);
+            byte[] decryptedData = cipher.decrypt(ciphertext, decryptionKey, decryptionMechanism);
+            if (log.isDebugEnabled()) {
+                log.debug(String.format("Successfully decrypted data with %s algorithm and %s private key using HSM device.",
+                        algorithm, keyAlias));
+            }
+            return decryptedData;
         } finally {
-            logDebug(String.format("Successfully decrypted data with %s algorithm and %s private key using HSM device.",
-                    algorithm, keyAlias));
             sessionHandler.closeSession(session);
         }
     }
@@ -160,19 +166,20 @@ public class HSMBasedInternalCryptoProvider implements InternalCryptoProvider {
         }
     }
 
-    protected Key retrieveKey(Key keyTemplate, Session session) throws CryptoException {
+    protected Key generateKeyTemplate(Key keyTemplate, String keyAlias) {
 
-        logDebug(String.format("Retrieving key with alias %s from the HSM device.",
-                new String(keyTemplate.getLabel().getCharArrayValue())));
-        KeyHandler keyHandler = new KeyHandler(session);
-        return keyHandler.retrieveKey(keyTemplate);
+        keyTemplate.getLabel().setCharArrayValue(keyAlias.toCharArray());
+        return keyTemplate;
     }
 
-    protected void logDebug(String message) {
+    protected Key retrieveKey(Key keyTemplate, Session session) throws CryptoException {
 
         if (log.isDebugEnabled()) {
-            log.debug(message);
+            log.debug(String.format("Retrieving key with alias %s from the HSM device.",
+                    new String(keyTemplate.getLabel().getCharArrayValue())));
         }
+        KeyHandler keyHandler = new KeyHandler(session);
+        return keyHandler.retrieveKey(keyTemplate);
     }
 
     protected SlotInfo getInternalProviderSlotInfo() {

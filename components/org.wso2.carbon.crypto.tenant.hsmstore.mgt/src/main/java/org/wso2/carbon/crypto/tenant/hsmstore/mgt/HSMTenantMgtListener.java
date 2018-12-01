@@ -110,7 +110,7 @@ public class HSMTenantMgtListener implements TenantMgtListener {
 
     @Override
     public void onPreDelete(int tenantId) throws StratosException {
-        //Implement this method to delete product specific data
+        // Implement this method to delete product specific data
     }
 
     protected void logDebug(String message) {

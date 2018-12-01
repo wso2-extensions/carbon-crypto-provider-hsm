@@ -37,6 +37,8 @@ import org.wso2.carbon.crypto.api.KeyResolver;
 import org.wso2.carbon.crypto.provider.hsm.HSMBasedExternalCryptoProvider;
 import org.wso2.carbon.crypto.provider.hsm.HSMBasedInternalCryptoProvider;
 import org.wso2.carbon.crypto.provider.hsm.HSMBasedKeyResolver;
+import org.wso2.carbon.crypto.provider.hsm.storemanager.DefaultHSMStoreManagerServiceImpl;
+import org.wso2.carbon.crypto.provider.hsm.storemanager.HSMStoreManagerService;
 
 /**
  * The class which is used to deal with the OSGi runtime for service registration and injection.
@@ -53,6 +55,7 @@ public class HSMCryptoImplComponent {
     private ServiceRegistration<ExternalCryptoProvider> hsmBasedExternalCryptoProviderServiceRegistration;
     private ServiceRegistration<InternalCryptoProvider> hsmBasedInternalCryptoProviderServiceRegistration;
     private ServiceRegistration<KeyResolver> hsmBasedKeyResolverServiceRegistration;
+    private ServiceRegistration<HSMStoreManagerService> hsmStoreManagerServiceServiceRegistration;
     private ServerConfigurationService serverConfigurationService;
 
     @Activate
@@ -84,6 +87,7 @@ public class HSMCryptoImplComponent {
         hsmBasedExternalCryptoProviderServiceRegistration.unregister();
         hsmBasedInternalCryptoProviderServiceRegistration.unregister();
         hsmBasedKeyResolverServiceRegistration.unregister();
+        hsmStoreManagerServiceServiceRegistration.unregister();
     }
 
     @Reference(
@@ -138,6 +142,13 @@ public class HSMCryptoImplComponent {
 
         if (log.isDebugEnabled()) {
             log.debug(String.format(infoMessage, "HSMBasedKeyResolver"));
+        }
+
+        hsmStoreManagerServiceServiceRegistration = bundleContext.registerService(HSMStoreManagerService.class,
+                new DefaultHSMStoreManagerServiceImpl(serverConfigurationService), null);
+
+        if (log.isDebugEnabled()) {
+            log.debug(String.format(infoMessage, "DefaultHSMStoreManagerService"));
         }
     }
 

@@ -27,4 +27,13 @@ public class CryptoConstants {
     public static final int DECRYPT_MODE = 2;
     public static final int SIGN_MODE = 3;
     public static final int VERIFY_MODE = 4;
+
+    public static class KeyType {
+
+        public static final String AES = "AES";
+        public static final String DES = "DES";
+        public static final String DES2 = "DES2";
+        public static final String DESede = "DESede";
+        public static final String DES3 = "3DES";
+    }
 }

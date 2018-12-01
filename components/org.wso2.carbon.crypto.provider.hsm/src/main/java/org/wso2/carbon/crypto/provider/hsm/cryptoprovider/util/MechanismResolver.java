@@ -58,12 +58,12 @@ public class MechanismResolver {
         /*
          * Encrypt/Decrypt mechanisms
          */
-        //DES mechanisms
+        // DES mechanisms
         put("DES/CBC/NoPadding", PKCS11Constants.CKM_DES_CBC);
         put("DES/CBC/PKCS5Padding", PKCS11Constants.CKM_DES_CBC_PAD);
         put("DES/ECB/NoPadding", PKCS11Constants.CKM_DES_ECB);
 
-        //DES3 mechanisms
+        // DES3 mechanisms
         put("DESede/CBC/NoPadding", PKCS11Constants.CKM_DES3_CBC);
         put("3DES/CBC/NoPadding", PKCS11Constants.CKM_DES3_CBC);
         put("DESede/CBC/PKCS5Padding", PKCS11Constants.CKM_DES3_CBC_PAD);
@@ -71,7 +71,7 @@ public class MechanismResolver {
         put("DESede/ECB/NoPadding", PKCS11Constants.CKM_DES3_ECB);
         put("3DES/ECB/NoPadding", PKCS11Constants.CKM_DES3_ECB);
 
-        //AES mechanisms
+        // AES mechanisms
         put("AES/CBC/NoPadding", PKCS11Constants.CKM_AES_CBC);
         put("AES_128/CBC/NoPadding", PKCS11Constants.CKM_AES_CBC);
         put("AES_192/CBC/NoPadding", PKCS11Constants.CKM_AES_CBC);
@@ -89,7 +89,7 @@ public class MechanismResolver {
         put("AES_192/GCM/NoPadding", PKCS11Constants.CKM_AES_GCM);
         put("AES_256/GCM/NoPadding", PKCS11Constants.CKM_AES_GCM);
 
-        //RSA mechanisms
+        // RSA mechanisms
         put("RSA/ECB/OAEPwithMD5andMGF1Padding", PKCS11Constants.CKM_RSA_PKCS_OAEP);
         put("RSA/ECB/OAEPwithSHA1andMGF1Padding", PKCS11Constants.CKM_RSA_PKCS_OAEP);
         put("RSA/ECB/OAEPwithSHA256andMGF1Padding", PKCS11Constants.CKM_RSA_PKCS_OAEP);
@@ -99,18 +99,18 @@ public class MechanismResolver {
         put("RSA/ECB/NoPadding", PKCS11Constants.CKM_RSA_X_509);
         put("RSA/ECB/ISO9796Padding", PKCS11Constants.CKM_RSA_9796);
 
-        //Blowfish mechanisms
+        // Blowfish mechanisms
         put("Blowfish/CBC/NoPadding", PKCS11Constants.CKM_BLOWFISH_CBC);
         put("Blowfish/CBC/PKCS5Padding", PKCS11Constants.CKM_BLOWFISH_CBC);
 
         /*
          * Sign/Verify mechanisms
          */
-        //ECDSA sign/verify mechanisms
+        // ECDSA sign/verify mechanisms
         put("NONEwithECDSA", PKCS11Constants.CKM_ECDSA);
         put("SHA1withECDSA", PKCS11Constants.CKM_ECDSA_SHA1);
 
-        //RSA sign/verify mechanisms
+        // RSA sign/verify mechanisms
         put("MD2withRSA", PKCS11Constants.CKM_MD2_RSA_PKCS);
         put("MD5withRSA", PKCS11Constants.CKM_MD5_RSA_PKCS);
         put("SHA1withRSA", PKCS11Constants.CKM_SHA1_RSA_PKCS);
@@ -125,7 +125,7 @@ public class MechanismResolver {
         put("SHA384withRSAandMGF1", PKCS11Constants.CKM_SHA384_RSA_PKCS_PSS);
         put("SHA512withRSAandMGF1", PKCS11Constants.CKM_SHA512_RSA_PKCS_PSS);
 
-        //DSA sign/verify mechanisms
+        // DSA sign/verify mechanisms
         put("RawDSA", PKCS11Constants.CKM_DSA);
         put("SHA1withDSA", PKCS11Constants.CKM_DSA_SHA1);
 
@@ -196,14 +196,18 @@ public class MechanismResolver {
     public Mechanism resolveMechanism(MechanismDataHolder mechanismDataHolder) throws CryptoException {
 
         if (mechanisms.containsKey(mechanismDataHolder.getJceMechanismSpecification())) {
-            logDebug(String.format("Resolving PKCS #11 mechanism for '%s' JCE standard algorithm.",
-                    mechanismDataHolder.getJceMechanismSpecification()));
+            if (log.isDebugEnabled()) {
+                log.debug(String.format("Resolving PKCS #11 mechanism for '%s' JCE standard algorithm.",
+                        mechanismDataHolder.getJceMechanismSpecification()));
+            }
             Mechanism mechanism = Mechanism.get(mechanisms.get(mechanismDataHolder.getJceMechanismSpecification()));
             if (parameterRequiredMechanisms.containsKey(mechanism.getMechanismCode())) {
                 resolveParameters(mechanism, mechanismDataHolder);
             }
-            logDebug(String.format("Successfully resolved PKCS #11 mechanism for '%s' JCE standard algorithm.",
-                    mechanismDataHolder.getJceMechanismSpecification()));
+            if (log.isDebugEnabled()) {
+                log.debug(String.format("Successfully resolved PKCS #11 mechanism for '%s' JCE standard algorithm.",
+                        mechanismDataHolder.getJceMechanismSpecification()));
+            }
             return mechanism;
         } else {
             String errorMessage = String.format("Requested %s algorithm is not supported by HSM based crypto provider.",
@@ -229,12 +233,17 @@ public class MechanismResolver {
             mechanism.setParameters(getGCMParameters((GCMParameterSpec) mechanismDataHolder.getAlgorithmParameterSpec(),
                     mechanismDataHolder.getOperatingMode(), 12, mechanismDataHolder.getAuthData()));
         }
-        logDebug(String.format("Successfully resolved parameters for '%s' PKCS #11 mechanism.", mechanism.getName()));
+        if (log.isDebugEnabled()) {
+            log.debug(String.format("Successfully resolved parameters for '%s' PKCS #11 mechanism.",
+                    mechanism.getName()));
+        }
     }
 
     protected RSAPkcsOaepParameters getOAEPParameters(String parameter) throws CryptoException {
 
-        logDebug(String.format("Resolving RSA OAEP algorithm parameters."));
+        if (log.isDebugEnabled()) {
+            log.debug(String.format("Resolving RSA OAEP algorithm parameters."));
+        }
         String[] specParams = parameter.split("with");
         String[] oaepParams = specParams[1].split("and");
         if (mechanisms.containsKey(oaepParams[0])) {
@@ -248,8 +257,10 @@ public class MechanismResolver {
 
     protected RSAPkcsPssParameters getRSAPSSParameters(String algorithmSpecification) throws CryptoException {
 
-        logDebug(String.format("Resolving RSA PSS algorithm parameters for %s algorithm.",
-                algorithmSpecification));
+        if (log.isDebugEnabled()) {
+            log.debug(String.format("Resolving RSA PSS algorithm parameters for %s algorithm.",
+                    algorithmSpecification));
+        }
         if (algorithmSpecification.contains("SHA1")) {
             return new RSAPkcsPssParameters(Mechanism.get(mechanisms.get("SHA1")), 1L,
                     20L);
@@ -272,7 +283,9 @@ public class MechanismResolver {
                                                                                int operatingMode, int ivSize)
             throws CryptoException {
 
-        logDebug("Resolving initialization vector parameters.");
+        if (log.isDebugEnabled()) {
+            log.debug("Resolving initialization vector parameters.");
+        }
         if (operatingMode == ENCRYPT_MODE) {
             return new InitializationVectorParameters(generateIV(ivSize));
         } else if (operatingMode == DECRYPT_MODE) {
@@ -291,7 +304,9 @@ public class MechanismResolver {
     protected GcmParameters getGCMParameters(GCMParameterSpec gcmParameterSpec, int operatingMode, int ivSize,
                                              byte[] authData) throws CryptoException {
 
-        logDebug("Resolving GCM parameters.");
+        if (log.isDebugEnabled()) {
+            log.debug("Resolving GCM parameters.");
+        }
         if (operatingMode == ENCRYPT_MODE) {
             return new GcmParameters(generateIV(ivSize), authData, 128);
         } else if (operatingMode == DECRYPT_MODE) {
@@ -312,12 +327,5 @@ public class MechanismResolver {
         byte[] iv = new byte[size];
         random.nextBytes(iv);
         return iv;
-    }
-
-    protected void logDebug(String message) {
-
-        if (log.isDebugEnabled()) {
-            log.debug(message);
-        }
     }
 }

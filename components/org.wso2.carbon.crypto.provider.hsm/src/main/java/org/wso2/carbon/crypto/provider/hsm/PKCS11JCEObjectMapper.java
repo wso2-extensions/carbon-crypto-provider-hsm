@@ -64,7 +64,9 @@ public class PKCS11JCEObjectMapper {
         X509Certificate x509Certificate = (X509Certificate) certificate;
         X509PublicKeyCertificate cert = mapX509CertJCEToPKCS11(x509Certificate);
         RSAPublicKey rsaPublicKey = mapRSAPublicKeyJCEToPKCS11(x509Certificate);
-        logDebug("Successfully mapped PKCS #11 X.509 public certificate to JCE X.509 public certificate.");
+        if (log.isDebugEnabled()) {
+            log.debug("Successfully mapped PKCS #11 X.509 public certificate to JCE X.509 public certificate.");
+        }
         return new PKCS11CertificateData(cert, rsaPublicKey);
     }
 
@@ -83,12 +85,16 @@ public class PKCS11JCEObjectMapper {
                     "%s type certificates from PKCS #11 to JCE.", certificate.getClass());
             throw new CryptoException(errorMessage);
         }
-        logDebug("Mapping JCE X.509 public certificate to PKCS #11 X.509 public certificate.");
+        if (log.isDebugEnabled()) {
+            log.debug("Mapping JCE X.509 public certificate to PKCS #11 X.509 public certificate.");
+        }
         byte[] x509Certificate = ((X509PublicKeyCertificate) certificate).getValue().getByteArrayValue();
         try {
             java.security.cert.Certificate generatedCertificate = CertificateFactory.getInstance("X.509")
                     .generateCertificate(new ByteArrayInputStream(x509Certificate));
-            logDebug("Successfully mapped JCE X.509 public certificate to PKCS #11 X.509 public certificate.");
+            if (log.isDebugEnabled()) {
+                log.debug("Successfully mapped JCE X.509 public certificate to PKCS #11 X.509 public certificate.");
+            }
             return generatedCertificate;
         } catch (CertificateException e) {
             String errorMessage = String.format("Error occurred while generating X.509 certificate from the " +
@@ -116,7 +122,9 @@ public class PKCS11JCEObjectMapper {
         RSAPrivateKey rsaPrivateKey = new RSAPrivateKey();
         rsaPrivateKey.getModulus().setByteArrayValue(rsaPrivateKeySpec.getModulus().toByteArray());
         rsaPrivateKey.getPrivateExponent().setByteArrayValue(rsaPrivateKeySpec.getPrivateExponent().toByteArray());
-        logDebug("Successfully mapped JCE RSA private key to PKCS #11 RSA private key.");
+        if (log.isDebugEnabled()) {
+            log.debug("Successfully mapped JCE RSA private key to PKCS #11 RSA private key.");
+        }
         return rsaPrivateKey;
     }
 
@@ -134,8 +142,9 @@ public class PKCS11JCEObjectMapper {
                     "private keys from PKCS #11 to JCE.", privateKey.getClass());
             throw new CryptoException(errorMessage);
         }
-
-        logDebug("Mapping PKCS #11 RSA private key to JCE RSA private key.");
+        if (log.isDebugEnabled()) {
+            log.debug("Mapping PKCS #11 RSA private key to JCE RSA private key.");
+        }
         RSAPrivateKey retrievedRSAKey = (RSAPrivateKey) privateKey;
         BigInteger privateExponent = new BigInteger(retrievedRSAKey.
                 getPrivateExponent().getByteArrayValue());
@@ -144,7 +153,9 @@ public class PKCS11JCEObjectMapper {
         try {
             java.security.PrivateKey generatedKey = KeyFactory.getInstance(keyGenerationAlgorithm).generatePrivate(new
                     RSAPrivateKeySpec(modulus, privateExponent));
-            logDebug("Successfully mapped PKCS #11 RSA private key to JCE RSA private key.");
+            if (log.isDebugEnabled()) {
+                log.debug("Successfully mapped PKCS #11 RSA private key to JCE RSA private key.");
+            }
             return generatedKey;
         } catch (InvalidKeySpecException e) {
             String errorMessage = String.format("Provided key specification is invalid for key alias '%s'",
@@ -170,7 +181,9 @@ public class PKCS11JCEObjectMapper {
         rsaPublicKey.getSubject().setByteArrayValue(x509Certificate.getSubjectX500Principal().getEncoded());
         rsaPublicKey.getModulus().setByteArrayValue(rsaPublicKeySpec.getModulus().toByteArray());
         rsaPublicKey.getPublicExponent().setByteArrayValue(rsaPublicKeySpec.getPublicExponent().toByteArray());
-        logDebug("Successfully mapped JCE RSA public key to PKCS #11 public key.");
+        if (log.isDebugEnabled()) {
+            log.debug("Successfully mapped JCE RSA public key to PKCS #11 public key.");
+        }
         return rsaPublicKey;
     }
 
@@ -187,14 +200,9 @@ public class PKCS11JCEObjectMapper {
             String errorMessage = "Error occurred while encoding the certificate.";
             throw new CryptoException(errorMessage, e);
         }
-        logDebug("Successfully mapped X509 Java certificate to PKCS #11 certificate.");
-        return cert;
-    }
-
-    protected static void logDebug(String message) {
-
         if (log.isDebugEnabled()) {
-            log.debug(message);
+            log.debug("Successfully mapped X509 Java certificate to PKCS #11 certificate.");
         }
+        return cert;
     }
 }
