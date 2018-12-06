@@ -30,6 +30,7 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>org.wso2.carbon.crypto.tenant.hsmstore.mgt</artifactId>
     <packaging>bundle</packaging>
+    <name>WSO2 Carbon Extensions - HSM Store Manager</name>
 
     <dependencies>
         <dependency>
