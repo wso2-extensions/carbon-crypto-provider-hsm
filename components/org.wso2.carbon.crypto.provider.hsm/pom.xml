@@ -30,7 +30,7 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>org.wso2.carbon.crypto.provider.hsm</artifactId>
     <packaging>bundle</packaging>
-    <name>WSO2 - HSM Based Crypto Provider</name>
+    <name>WSO2 Carbon Extensions - HSM Based Crypto Provider</name>
 
     <dependencies>
         <dependency>
