@@ -22,16 +22,8 @@
 <suite thread-count="1" verbose="0" name="Surefire suite">
     <test name="Surefire test">
         <classes>
-            <class name="org.wso2.carbon.crypto.provider.hsm.HSMBasedInternalCryptoProviderTest"/>
-            <class name="org.wso2.carbon.crypto.provider.hsm.HSMBasedKeyResolverTest"/>
             <class name="org.wso2.carbon.crypto.provider.hsm.cryptoprovider.util.KeyTemplateGeneratorTest"/>
             <class name="org.wso2.carbon.crypto.provider.hsm.cryptoprovider.util.MechanismResolverTest"/>
-            <class name="org.wso2.carbon.crypto.provider.hsm.cryptoprovider.util.SessionHandlerTest"/>
-            <class name="org.wso2.carbon.crypto.provider.hsm.cryptoprovider.objecthandlers.CertificateHandlerTest"/>
-            <class name="org.wso2.carbon.crypto.provider.hsm.cryptoprovider.objecthandlers.KeyHandlerTest"/>
-            <class name="org.wso2.carbon.crypto.provider.hsm.cryptoprovider.operators.CipherTest"/>
-            <class name="org.wso2.carbon.crypto.provider.hsm.cryptoprovider.operators.SignatureHandlerTest"/>
-            <class name="org.wso2.carbon.crypto.provider.hsm.HSMBasedExternalCryptoProviderTest"/>
         </classes>
     </test>
 </suite>
