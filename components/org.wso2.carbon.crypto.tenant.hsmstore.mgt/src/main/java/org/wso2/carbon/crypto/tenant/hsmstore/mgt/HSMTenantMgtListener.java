@@ -37,15 +37,6 @@ public class HSMTenantMgtListener implements TenantMgtListener {
     private static Log log = LogFactory.getLog(HSMTenantMgtListener.class);
 
     /**
-     * Constructor of {@link HSMTenantMgtListener}.
-     *
-     * @throws CryptoException
-     */
-    public HSMTenantMgtListener() throws CryptoException {
-
-    }
-
-    /**
      * This method retrieves the generated keystore at the tenant creation, using {@link KeyStoreManager} and
      * stores the public certificate and private key in the HSM device.
      *

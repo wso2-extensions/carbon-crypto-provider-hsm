@@ -608,9 +608,13 @@ public class HSMBasedExternalCryptoProvider implements ExternalCryptoProvider {
         Parameters paramObject = symmetricMechanism.getParameters();
         if (paramObject instanceof GcmParameters) {
             CK_GCM_PARAMS gcmParams = (CK_GCM_PARAMS) paramObject.getPKCS11ParamsObject();
+            // Generate parameter specification for GCM symmetric encryption.
             GCMParameterSpec gcmParameterSpec = new GCMParameterSpec((int) gcmParams.ulTagBits, gcmParams.pIv);
+            // Get authentication tag position in encrypted data.
             int tagPos = encryptedData.length - (int) (gcmParams.ulTagBits) / 8;
+            // Get cipher data from encrypted data.
             byte[] cipherData = subArray(encryptedData, 0, tagPos);
+            // Get authentication tag from encrypted data.
             byte[] authTag = subArray(encryptedData, tagPos, (int) (gcmParams.ulTagBits) / 8);
             return new HybridEncryptionOutput(cipherData, encryptedKey, gcmParams.pAAD,
                     authTag, gcmParameterSpec);
