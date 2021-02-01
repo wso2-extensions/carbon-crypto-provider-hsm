@@ -29,7 +29,7 @@
     <groupId>org.wso2.carbon.crypto</groupId>
     <artifactId>carbon-crypto-provider-hsm</artifactId>
     <packaging>pom</packaging>
-    <version>1.0.2-SNAPSHOT</version>
+    <version>1.0.2</version>
     <name>WSO2 Carbon Extensions - Crypto Provider HSM</name>
     <url>http://wso2.org</url>
 
@@ -39,7 +39,7 @@
         <developerConnection>scm:git:https://github.com/wso2-extensions/carbon-crypto-provider-hsm.git
         </developerConnection>
         <connection>scm:git:https://github.com/wso2-extensions/carbon-crypto-provider-hsm.git</connection>
-        <tag>HEAD</tag>
+        <tag>v1.0.2</tag>
     </scm>
 
     <modules>
