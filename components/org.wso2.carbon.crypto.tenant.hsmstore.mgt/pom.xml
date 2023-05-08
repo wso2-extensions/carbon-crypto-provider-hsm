@@ -21,7 +21,7 @@
     <parent>
         <artifactId>carbon-crypto-provider-hsm</artifactId>
         <groupId>org.wso2.carbon.crypto</groupId>
-        <version>1.0.4-SNAPSHOT</version>
+        <version>1.0.4</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
