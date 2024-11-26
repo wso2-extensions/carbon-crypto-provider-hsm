@@ -151,6 +151,11 @@
                 <version>${org.powermock.version}</version>
                 <scope>test</scope>
             </dependency>
+            <dependency>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>${jacoco.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -226,6 +231,25 @@
                     <artifactId>maven-project-info-reports-plugin</artifactId>
                     <version>${maven.plugins.version}</version>
                 </plugin>
+                <plugin>
+                    <groupId>org.jacoco</groupId>
+                    <artifactId>jacoco-maven-plugin</artifactId>
+                    <version>${jacoco.version}</version>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>prepare-agent</goal>
+                            </goals>
+                        </execution>
+                        <execution>
+                            <id>report</id>
+                            <phase>test</phase>
+                            <goals>
+                                <goal>report</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
             </plugins>
         </pluginManagement>
         <plugins>
@@ -290,5 +314,7 @@
         <maven.surefire.plugin.version>2.18.1</maven.surefire.plugin.version>
         <org.powermock.version>1.7.3</org.powermock.version>
         <jmockit.version>1.35</jmockit.version>
+    
+        <jacoco.version>0.8.12</jacoco.version>
     </properties>
 </project>
